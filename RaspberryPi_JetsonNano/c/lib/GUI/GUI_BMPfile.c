@@ -55,12 +55,64 @@
 #include <math.h> //memset()
 #include <stdio.h>
 
+// Returns 0 if it uses a palette
+// Returns 1 if it uses the colours directly
+// Returns -1 if there is an error
+UBYTE ReadBitmapStart(FILE *fp, BMPFILEHEADER *h, BMPINFOHEADER *i)
+{
+    // Read the headers
+    if (fseek(fp, 0, SEEK_SET) != 0)
+        return -1;
+    if (fread(h, sizeof(BMPFILEHEADER), 1, fp) != sizeof(BMPFILEHEADER))
+        return -1;
+    if (fread(i, sizeof(BMPINFOHEADER), 1, fp) != sizeof(BMPINFOHEADER))
+        return -1;
+
+    // Seek to the palette (if there is one)
+    if (fseek(fp, i.biInfoSize + 14, SEEK_SET) != 0)
+        return -1;
+
+    return i.biClrUsed == 0 ? 0 : 1;
+}
+
+// Read the bitmap after the palette
+UBYTE ReadBitmapPaletted(
+    FILE *fp,
+    BMPFILEHEADER *h,
+    BMPINFOHEADER *i,
+    UWORD xStart,
+    UWORD yStart,
+    UBYTE palette[])
+{
+    UWORD rowBytes;
+
+    if (i.biBitCount == 1)
+        rowBytes = (i.biWidth + 31) / 32 * 4;
+    else if (i.biBitCount == 2)
+        rowBytes = (i.biWidth + 15) / 16 * 4;
+    else if (i.biBitCount == 4)
+        rowBytes = (i.biWidth + 7) / 8 * 4;
+    else if (i.biBitCount == 8)
+        rowBytes = (i.biWidth + 3) / 4 * 4;
+    else
+        return -1;
+
+    UBYTE div = 8 / i.biBitCount;
+    UBYTE mask = ~(0xff << i.biBitCount);
+
+    // Seek to the image
+    if (fseek(fp, h.bOffset, SEEK_SET) != 0)
+        return -1;
+
+    // Read the rows
+    
+}
+
 UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
 {
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
     BMPINFOHEADER bmpInfoHeader;  //Define a bmp info header structure
-
 
     // Binary file open
     if((fp = fopen(path, "rb")) == NULL) {
