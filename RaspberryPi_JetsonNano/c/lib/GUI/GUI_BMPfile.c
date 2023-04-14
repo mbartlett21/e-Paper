@@ -63,9 +63,9 @@ UBYTE ReadBitmapStart(FILE *fp, BMPFILEHEADER *h, BMPINFOHEADER *i)
     // Read the headers
     if (fseek(fp, 0, SEEK_SET) != 0)
         return -1;
-    if (fread(h, sizeof(BMPFILEHEADER), 1, fp) != sizeof(BMPFILEHEADER))
+    if (fread(h, sizeof(BMPFILEHEADER), 1, fp) != sizeof(BMPFILEHEADER)) // 14 bytes
         return -1;
-    if (fread(i, sizeof(BMPINFOHEADER), 1, fp) != sizeof(BMPINFOHEADER))
+    if (fread(i, sizeof(BMPINFOHEADER), 1, fp) != sizeof(BMPINFOHEADER)) // 50 bytes
         return -1;
 
     // Seek to the palette (if there is one)
@@ -113,17 +113,19 @@ UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
     BMPINFOHEADER bmpInfoHeader;  //Define a bmp info header structure
+    UBYTE hasPalette;
 
     // Binary file open
-    if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+    if ((fp = fopen(path, "rb")) == NULL) {
+        Debug("Cannot open the file!\n");
         exit(0);
     }
 
-    // Set the file pointer from the beginning
-    fseek(fp, 0, SEEK_SET);
-    fread(&bmpFileHeader, sizeof(BMPFILEHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 14
-    fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
+    if ((hasPalette = ReadBitmapStart(fp, &bmpFileHeader, &bmpInfoHeader)) == -1) {
+        Debug("Error reading file");
+        exit(0);
+    }
+
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 
     UWORD Image_Width_Byte = (bmpInfoHeader.biWidth % 8 == 0)? (bmpInfoHeader.biWidth / 8): (bmpInfoHeader.biWidth / 8 + 1);
@@ -197,17 +199,19 @@ UBYTE GUI_ReadBmp_4Gray(const char *path, UWORD Xstart, UWORD Ystart)
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
     BMPINFOHEADER bmpInfoHeader;  //Define a bmp info header structure
-    
+    UBYTE hasPalette;
+
     // Binary file open
-    if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+    if ((fp = fopen(path, "rb")) == NULL) {
+        Debug("Cannot open the file!\n");
         exit(0);
     }
- 
-    // Set the file pointer from the beginning
-    fseek(fp, 0, SEEK_SET);
-    fread(&bmpFileHeader, sizeof(BMPFILEHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 14
-    fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
+
+    if ((hasPalette = ReadBitmapStart(fp, &bmpFileHeader, &bmpInfoHeader)) == -1) {
+        Debug("Error reading file");
+        exit(0);
+    }
+
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 
     UWORD Image_Width_Byte = (bmpInfoHeader.biWidth % 4 == 0)? (bmpInfoHeader.biWidth / 4): (bmpInfoHeader.biWidth / 4 + 1);
@@ -263,19 +267,21 @@ UBYTE GUI_ReadBmp_RGB_7Color(const char *path, UWORD Xstart, UWORD Ystart)
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
     BMPINFOHEADER bmpInfoHeader;  //Define a bmp info header structure
-    
+    UBYTE hasPalette;
+
     // Binary file open
-    if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+    if ((fp = fopen(path, "rb")) == NULL) {
+        Debug("Cannot open the file!\n");
         exit(0);
     }
 
-    // Set the file pointer from the beginning
-    fseek(fp, 0, SEEK_SET);
-    fread(&bmpFileHeader, sizeof(BMPFILEHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 14
-    fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
+    if ((hasPalette = ReadBitmapStart(fp, &bmpFileHeader, &bmpInfoHeader)) == -1) {
+        Debug("Error reading file");
+        exit(0);
+    }
+
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
-	
+
     UDOUBLE Image_Byte = bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3;
     UBYTE Image[Image_Byte];
     memset(Image, 0xFF, Image_Byte);
@@ -342,17 +348,19 @@ UBYTE GUI_ReadBmp_RGB_4Color(const char *path, UWORD Xstart, UWORD Ystart)
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
     BMPINFOHEADER bmpInfoHeader;  //Define a bmp info header structure
-    
+    UBYTE hasPalette;
+
     // Binary file open
-    if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+    if ((fp = fopen(path, "rb")) == NULL) {
+        Debug("Cannot open the file!\n");
         exit(0);
     }
 
-    // Set the file pointer from the beginning
-    fseek(fp, 0, SEEK_SET);
-    fread(&bmpFileHeader, sizeof(BMPFILEHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 14
-    fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
+    if ((hasPalette = ReadBitmapStart(fp, &bmpFileHeader, &bmpInfoHeader)) == -1) {
+        Debug("Error reading file");
+        exit(0);
+    }
+
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 	
     UDOUBLE Image_Byte = bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3;
